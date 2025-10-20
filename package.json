@@ -1,0 +1,27 @@
+{
+  "name": "invoice-cli",
+  "version": "1.0.0",
+  "description": "CSV から請求書PDFを生成するCLIツール",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node src/index.ts --input ./samples/sample.csv --outDir ./out --debugLayout",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": ["invoice", "pdf", "cli", "japanese"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "csv-parse": "^5.5.3",
+    "dayjs": "^1.11.10",
+    "ejs": "^3.1.9",
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^21.6.1"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/node": "^20.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>請求書 - <%= invoice.invoiceNumber %></title>
+  <style><%= css %></style>
+</head>
+<body<% if (debugLayout) { %> class="debug-layout"<% } %>>
+
+<% invoice.pages.forEach((page, pageIndex) => { %>
+  <div class="page<% if (pageIndex > 0) { %> page-break<% } %>">
+    
+    <!-- ヘッダー（1ページ目のみ） -->
+    <% if (pageIndex === 0) { %>
+    <div class="header">
+      <!-- 上部：宛先とタイトル -->
+      <div class="header-top">
+        <div class="recipient">
+          <div class="recipient-name"><%= invoice.recipientName %> 御中</div>
+          <div class="recipient-address">
+            <% if (invoice.formatted.recipientPostalCode) { %><%= invoice.formatted.recipientPostalCode %><br><% } %>
+            <%= invoice.recipientAddress1 %><% if (invoice.recipientAddress2) { %><br><%= invoice.recipientAddress2 %><% } %>
+          </div>
+          <% if (invoice.recipientBusinessNumber) { %>
+          <div class="recipient-business-number">事業者番号: <%= invoice.recipientBusinessNumber %></div>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- タイトル -->
+      <div class="title">請 求 書</div>
+      
+      <!-- 発行情報と請求元 -->
+      <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+        <div class="issue-info" style="flex: 1; text-align: left;">
+          <div>発行年月日: <%= invoice.formatted.issueDate %></div>
+          <div>請求書番号: <%= invoice.invoiceNumber %></div>
+          <% if (invoice.monthDisplay) { %>
+          <div>月度: <%= invoice.monthDisplay %></div>
+          <% } %>
+          <% if (invoice.customerNumber) { %>
+          <div>お客様番号: <%= invoice.customerNumber %></div>
+          <% } %>
+        </div>
+        
+        <div class="sender" style="flex: 1;">
+          <div class="sender-name"><%= invoice.senderName %></div>
+          <% if (invoice.formatted.senderPostalCode) { %><div><%= invoice.formatted.senderPostalCode %></div><% } %>
+          <div><%= invoice.senderAddress1 %></div>
+          <% if (invoice.senderAddress2) { %><div><%= invoice.senderAddress2 %></div><% } %>
+          <% if (invoice.senderPhone) { %><div>TEL: <%= invoice.senderPhone %></div><% } %>
+          <% if (invoice.stamp) { %>
+          <!-- 印影は assets/hanko.png が存在する場合に表示 -->
+          <!-- <img src="../assets/hanko.png" alt="印" class="stamp"> -->
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- サマリー表 -->
+      <% if (invoice.formatted.summaryItems.length > 0) { %>
+      <div class="summary-section">
+        <table class="summary-table">
+          <% 
+          // サマリー項目を2列ずつ表示
+          for (let i = 0; i < invoice.formatted.summaryItems.length; i += 2) {
+            const item1 = invoice.formatted.summaryItems[i];
+            const item2 = invoice.formatted.summaryItems[i + 1];
+          %>
+          <tr>
+            <th><%= item1.title %></th>
+            <td><%= item1.amount %></td>
+            <% if (item2) { %>
+            <th><%= item2.title %></th>
+            <td><%= item2.amount %></td>
+            <% } else { %>
+            <th></th>
+            <td></td>
+            <% } %>
+          </tr>
+          <% } %>
+        </table>
+      </div>
+      <% } %>
+      
+      <!-- インボイス注記 -->
+      <% if (invoice.invoiceNote1 || invoice.invoiceNote2) { %>
+      <div class="invoice-notes">
+        <% if (invoice.invoiceNote1) { %><div><%= invoice.invoiceNote1 %></div><% } %>
+        <% if (invoice.invoiceNote2) { %><div><%= invoice.invoiceNote2 %></div><% } %>
+      </div>
+      <% } %>
+      
+      <!-- お知らせ -->
+      <% if (invoice.notices.length > 0) { %>
+      <div class="notices">
+        <% invoice.notices.forEach(notice => { %>
+        <div class="notice-item<% if (notice.startsWith('!!')) { %> notice-highlight<% } %>">
+          <%= notice.replace(/^!!/, '') %>
+        </div>
+        <% }); %>
+      </div>
+      <% } %>
+    </div>
+    <% } %>
+    
+    <!-- 明細表 -->
+    <div class="details-section">
+      <table class="details-table">
+        <thead>
+          <tr>
+            <th class="col-date">日付</th>
+            <th class="col-type">種別</th>
+            <th class="col-product">商品名</th>
+            <th class="col-code">コード</th>
+            <th class="col-quantity">数量</th>
+            <th class="col-unit-price">単価</th>
+            <th class="col-amount">金額</th>
+            <th class="col-tax">税</th>
+            <th class="col-note">金額説明</th>
+            <th class="col-settlement">精算補足</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% page.details.forEach(detail => { %>
+            <% if (detail.type === 'blank') { %>
+            <!-- 空白行 -->
+            <tr class="blank-row">
+              <td colspan="10"></td>
+            </tr>
+            <% } else if (detail.type === 'section') { %>
+            <!-- 中間見出し -->
+            <tr class="section-row">
+              <td colspan="10"><%= detail.sectionTitle %></td>
+            </tr>
+            <% } else { %>
+            <!-- 通常の明細行 -->
+            <tr>
+              <td class="col-date"><%= detail.formatted?.date || '' %></td>
+              <td class="col-type"><%= detail.detailType || '' %></td>
+              <td class="col-product"><%= detail.productName || '' %></td>
+              <td class="col-code"><%= detail.code || '' %></td>
+              <td class="col-quantity"><%= detail.formatted?.quantity || '' %></td>
+              <td class="col-unit-price"><%= detail.formatted?.unitPrice || '' %></td>
+              <td class="col-amount"><%= detail.formatted?.amount || '' %></td>
+              <td class="col-tax"><%= detail.taxType || '' %></td>
+              <td class="col-note"><%= detail.amountNote || '' %></td>
+              <td class="col-settlement"><%= detail.settlementNote || '' %></td>
+            </tr>
+            <% } %>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- フッター -->
+    <div class="footer">
+      <div class="footer-content">
+        <div>
+          <% if (invoice.businessNumber) { %>
+          <div class="business-number">登録番号: <%= invoice.businessNumber %></div>
+          <% } %>
+          <% if (invoice.taxSymbol) { %>
+          <div class="tax-legend">税区分: <%= invoice.taxSymbol %></div>
+          <% } %>
+          <% if (invoice.hasReducedTaxRate) { %>
+          <div class="reduced-tax-note">※ 軽減税率対象品目を含みます</div>
+          <% } %>
+        </div>
+        <div class="page-number">
+          ページ <%= page.pageNumber %> / <%= page.totalPages %>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+<% }); %>
+
+</body>
+</html>

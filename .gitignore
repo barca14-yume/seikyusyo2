@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out/
+*.log
+.DS_Store
+
+# フォントファイル（ライセンスの都合上、各自でダウンロード）
+assets/fonts/*.ttf
+assets/fonts/*.otf
