@@ -7,3 +7,13 @@ out/
 # フォントファイル（ライセンスの都合上、各自でダウンロード）
 assets/fonts/*.ttf
 assets/fonts/*.otf
+
+# 実データ（個人情報保護のため）
+samples/*実*.csv
+samples/*本番*.csv
+samples/*顧客*.csv
+samples/*請求*.csv
+data/
+in/*.csv
+in/*.xlsx
+*.backup.csv
